@@ -16,12 +16,4 @@ public class ServerConfiguration extends CommonConfiguration {
         return properties.getProperty("db.url");
     }
 
-    public String getDbUsername() {
-        return properties.getProperty("db.username");
-    }
-
-    public String getDbPassword() {
-        return properties.getProperty("db.password");
-    }
-
 }
