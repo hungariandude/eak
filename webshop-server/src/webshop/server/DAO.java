@@ -5,6 +5,8 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.LinkedList;
+import java.util.List;
 
 import webshop.common.Item;
 import webshop.common.LogUtil;
@@ -42,6 +44,33 @@ public class DAO {
             }
         } catch (SQLException ex) {
             LogUtil.error("findItemById failed", ex);
+        }
+
+        return null;
+    }
+
+    public List<Item> findItemsByName(final String name) {
+        try {
+            PreparedStatement statement = connection.prepareStatement("select * from Item where lower(name) = lower(?)");
+            statement.setString(1, name);
+
+            ResultSet rs = statement.executeQuery();
+
+            List<Item> items = new LinkedList<>();
+
+            while (rs.next()) {
+                Item item = new Item();
+
+                item.setId(rs.getInt("id"));
+                item.setName(rs.getString("name"));
+                item.setPrice(rs.getInt("price"));
+
+                items.add(item);
+            }
+
+            return items;
+        } catch (SQLException ex) {
+            LogUtil.error("findItemsByName failed", ex);
         }
 
         return null;
