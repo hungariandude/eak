@@ -6,6 +6,8 @@ public enum Command {
     FIND_BY_NAME,
     UPDATE,
     INSERT,
-    DELETE;
+    DELETE,
+    EXIT,
+    STOP_SERVER;
 
 }

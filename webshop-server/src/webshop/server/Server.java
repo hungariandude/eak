@@ -5,6 +5,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
+import java.util.List;
 
 import webshop.common.Command;
 import webshop.common.Item;
@@ -15,6 +17,8 @@ public class Server extends Thread {
     private static final ServerConfiguration configuration;
     private static final DAO                 dao;
 
+    private static boolean                   running = true;
+
     static {
         configuration = new ServerConfiguration();
         dao = new DAO(configuration);
@@ -24,8 +28,13 @@ public class Server extends Thread {
         int port = Integer.parseInt(configuration.getServerPort());
 
         try (ServerSocket ss = new ServerSocket(port)) {
-            while (true) {
-                new Server(ss.accept()).start();
+            ss.setSoTimeout(1000);
+
+            while (running) {
+                try {
+                    new Server(ss.accept()).start();
+                } catch (SocketTimeoutException ex) {
+                }
             }
         }
     }
@@ -42,39 +51,59 @@ public class Server extends Thread {
                 ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream())) {
             serveClient(in, out);
         } catch (IOException ex) {
-            ex.printStackTrace();
+            LogUtil.error(ex);
         }
 
         try {
             socket.close();
         } catch (IOException ex) {
-            ex.printStackTrace();
+            LogUtil.error(ex);
         }
     }
 
     private static void serveClient(final ObjectInputStream in, final ObjectOutputStream out) throws IOException {
-        String commandStr = in.readUTF();
-        LogUtil.debug(commandStr + " command received from client");
+        OUTER: for (;;) {
+            String commandStr = in.readUTF();
+            LogUtil.debug(commandStr + " command received from client");
 
-        Command command = Command.valueOf(commandStr);
+            Command command = Command.valueOf(commandStr);
 
-        switch (command) {
-        case FIND_BY_KEY:
-            int id = in.readInt();
-            LogUtil.debug("Item ID received from client: " + id);
+            switch (command) {
+            case FIND_BY_KEY: {
+                int id = in.readInt();
+                LogUtil.debug("Item ID received from client: " + id);
 
-            Item item = dao.findItemById(id);
+                Item item = dao.findItemById(id);
 
-            out.writeObject(item);
-            out.flush();
-            break;
-        case UPDATE:
-            break;
-        case DELETE:
-            break;
-        default:
-            LogUtil.warn("Unknown command ignored: " + commandStr);
+                out.writeObject(item);
+                out.flush();
+            }
+                break;
+            case FIND_BY_NAME: {
+                String name = in.readUTF();
+                LogUtil.debug("Item name received from client: " + name);
+
+                List<Item> items = dao.findItemsByName(name);
+
+                out.writeObject(items);
+                out.flush();
+            }
+                break;
+            case INSERT:
+                break;
+            case UPDATE:
+                break;
+            case DELETE:
+                break;
+            case STOP_SERVER:
+                running = false;
+            case EXIT:
+                break OUTER;
+            default:
+                LogUtil.warn("Unknown command ignored: " + commandStr);
+            }
         }
+
     }
 
 }
