@@ -76,4 +76,44 @@ public class DAO {
         return null;
     }
 
+    public int insertItem(final Item item) {
+        try {
+            PreparedStatement statement = connection.prepareStatement("insert into Item (id, name, price) values (?, ?, ?)");
+            statement.setInt(1, item.getId());
+            statement.setString(2, item.getName());
+            statement.setInt(3, item.getPrice());
+
+            return statement.executeUpdate();
+        } catch (SQLException ex) {
+            LogUtil.error("insertItem failed", ex);
+            return -1;
+        }
+    }
+
+    public int updateItem(final Item item) {
+        try {
+            PreparedStatement statement = connection.prepareStatement("update Item set name = ?, price = ? where id = ?");
+            statement.setString(1, item.getName());
+            statement.setInt(2, item.getPrice());
+            statement.setInt(3, item.getId());
+
+            return statement.executeUpdate();
+        } catch (SQLException ex) {
+            LogUtil.error("updateItem failed", ex);
+            return -1;
+        }
+    }
+
+    public int deleteItemById(final int id) {
+        try {
+            PreparedStatement statement = connection.prepareStatement("delete from Item where id = ?");
+            statement.setInt(1, id);
+
+            return statement.executeUpdate();
+        } catch (SQLException ex) {
+            LogUtil.error("deleteItem failed", ex);
+            return -1;
+        }
+    }
+
 }

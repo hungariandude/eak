@@ -50,7 +50,7 @@ public class Server extends Thread {
         try (ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
                 ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream())) {
             serveClient(in, out);
-        } catch (IOException ex) {
+        } catch (IOException | ClassNotFoundException ex) {
             LogUtil.error(ex);
         }
 
@@ -61,7 +61,8 @@ public class Server extends Thread {
         }
     }
 
-    private static void serveClient(final ObjectInputStream in, final ObjectOutputStream out) throws IOException {
+    private static void serveClient(final ObjectInputStream in, final ObjectOutputStream out)
+            throws IOException, ClassNotFoundException {
         OUTER: for (;;) {
             String commandStr = in.readUTF();
             LogUtil.debug(commandStr + " command received from client");
@@ -89,11 +90,35 @@ public class Server extends Thread {
                 out.flush();
             }
                 break;
-            case INSERT:
+            case INSERT: {
+                Item item = (Item) in.readObject();
+                LogUtil.debug("Item object received from client: " + item);
+
+                int result = dao.insertItem(item);
+
+                out.writeUTF(getResponseByIntResult(result));
+                out.flush();
+            }
                 break;
-            case UPDATE:
+            case UPDATE: {
+                Item item = (Item) in.readObject();
+                LogUtil.debug("Item object received from client: " + item);
+
+                int result = dao.updateItem(item);
+
+                out.writeUTF(getResponseByIntResult(result));
+                out.flush();
+            }
                 break;
-            case DELETE:
+            case DELETE: {
+                int id = in.readInt();
+                LogUtil.debug("Item ID received from client: " + id);
+
+                int result = dao.deleteItemById(id);
+
+                out.writeUTF(getResponseByIntResult(result));
+                out.flush();
+            }
                 break;
             case STOP_SERVER:
                 running = false;
@@ -103,7 +128,16 @@ public class Server extends Thread {
                 LogUtil.warn("Unknown command ignored: " + commandStr);
             }
         }
+    }
 
+    private static String getResponseByIntResult(final int result) {
+        if (result == 1) {
+            return "OK";
+        } else if (result == 0) {
+            return "NOT_FOUND";
+        } else {
+            return "ERROR";
+        }
     }
 
 }
