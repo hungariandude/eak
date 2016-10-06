@@ -1,4 +1,4 @@
-package webshop.common;
+package webshop.client;
 
 public enum Command {
 

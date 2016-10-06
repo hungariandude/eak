@@ -2,7 +2,7 @@ package webshop.common;
 
 import java.io.Serializable;
 
-public class Item implements Serializable {
+public class Item implements Serializable, Comparable<Item> {
 
     private static final long serialVersionUID = 1L;
 
@@ -69,6 +69,16 @@ public class Item implements Serializable {
             return false;
         }
         return true;
+    }
+
+    @Override
+    public int compareTo(final Item o) {
+        int nameCompareResult = name.compareTo(o.name);
+        if (nameCompareResult == 0) {
+            return Integer.compare(price, o.price);
+        } else {
+            return nameCompareResult;
+        }
     }
 
 }

@@ -22,4 +22,8 @@ public class CommonConfiguration {
         return properties.getProperty("server.port");
     }
 
+    public String getRmiUrl() {
+        return properties.getProperty("rmi.url");
+    }
+
 }

@@ -10,6 +10,7 @@ import java.util.List;
 
 import webshop.common.Item;
 import webshop.common.LogUtil;
+import webshop.common.WebshopServerException;
 
 public class DAO {
 
@@ -26,7 +27,7 @@ public class DAO {
         }
     }
 
-    public Item findItemById(final int id) {
+    public Item findItemById(final int id) throws WebshopServerException {
         try {
             PreparedStatement statement = connection.prepareStatement("select name, price from Item where id = ?");
             statement.setInt(1, id);
@@ -41,15 +42,15 @@ public class DAO {
                 item.setPrice(rs.getInt("price"));
 
                 return item;
+            } else {
+                return null;
             }
         } catch (SQLException ex) {
-            LogUtil.error("findItemById failed", ex);
+            throw new WebshopServerException("findItemById failed", ex);
         }
-
-        return null;
     }
 
-    public List<Item> findItemsByName(final String name) {
+    public List<Item> findItemsByName(final String name) throws WebshopServerException {
         try {
             PreparedStatement statement = connection.prepareStatement("select * from Item where lower(name) = lower(?)");
             statement.setString(1, name);
@@ -70,13 +71,11 @@ public class DAO {
 
             return items;
         } catch (SQLException ex) {
-            LogUtil.error("findItemsByName failed", ex);
+            throw new WebshopServerException("findItemById failed", ex);
         }
-
-        return null;
     }
 
-    public int insertItem(final Item item) {
+    public int insertItem(final Item item) throws WebshopServerException {
         try {
             PreparedStatement statement = connection.prepareStatement("insert into Item (id, name, price) values (?, ?, ?)");
             statement.setInt(1, item.getId());
@@ -85,12 +84,11 @@ public class DAO {
 
             return statement.executeUpdate();
         } catch (SQLException ex) {
-            LogUtil.error("insertItem failed", ex);
-            return -1;
+            throw new WebshopServerException("insertItem failed", ex);
         }
     }
 
-    public int updateItem(final Item item) {
+    public int updateItem(final Item item) throws WebshopServerException {
         try {
             PreparedStatement statement = connection.prepareStatement("update Item set name = ?, price = ? where id = ?");
             statement.setString(1, item.getName());
@@ -99,20 +97,18 @@ public class DAO {
 
             return statement.executeUpdate();
         } catch (SQLException ex) {
-            LogUtil.error("updateItem failed", ex);
-            return -1;
+            throw new WebshopServerException("updateItem failed", ex);
         }
     }
 
-    public int deleteItemById(final int id) {
+    public int deleteItemById(final int id) throws WebshopServerException {
         try {
             PreparedStatement statement = connection.prepareStatement("delete from Item where id = ?");
             statement.setInt(1, id);
 
             return statement.executeUpdate();
         } catch (SQLException ex) {
-            LogUtil.error("deleteItem failed", ex);
-            return -1;
+            throw new WebshopServerException("updateItem failed", ex);
         }
     }
 
