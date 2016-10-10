@@ -18,11 +18,11 @@ public class RMIServerImpl extends UnicastRemoteObject implements RMIServer {
     private static final long                serialVersionUID = 1L;
 
     private static final ServerConfiguration configuration;
-    private static final DAO                 dao;
+    private static final DAO<Item, Integer>  dao;
 
     static {
         configuration = new ServerConfiguration();
-        dao = new DAO(configuration);
+        dao = new DAO<>(configuration, Item.class);
     }
 
     public RMIServerImpl() throws RemoteException {
@@ -51,7 +51,7 @@ public class RMIServerImpl extends UnicastRemoteObject implements RMIServer {
     public Item findItemById(final int itemId) throws WebshopServerException {
         LogUtil.debug("Item ID received from client: " + itemId);
 
-        Item item = dao.findItemById(itemId);
+        Item item = dao.findById(itemId);
 
         return item;
     }
@@ -60,7 +60,7 @@ public class RMIServerImpl extends UnicastRemoteObject implements RMIServer {
     public List<Item> findItemByName(final String name) throws WebshopServerException {
         LogUtil.debug("Item name received from client: " + name);
 
-        List<Item> items = dao.findItemsByName(name);
+        List<Item> items = dao.findAllByProperty("name", name);
 
         return items;
     }
@@ -69,21 +69,21 @@ public class RMIServerImpl extends UnicastRemoteObject implements RMIServer {
     public void insertItem(final Item item) throws WebshopServerException {
         LogUtil.debug("Item object received from client: " + item);
 
-        dao.insertItem(item);
+        dao.insert(item);
     }
 
     @Override
     public void updateItem(final Item item) throws WebshopServerException {
         LogUtil.debug("Item object received from client: " + item);
 
-        dao.updateItem(item);
+        dao.update(item);
     }
 
     @Override
     public void deleteItem(final int itemId) throws WebshopServerException {
         LogUtil.debug("Item ID received from client: " + itemId);
 
-        dao.deleteItemById(itemId);
+        dao.deleteById(itemId);
     }
 
 }

@@ -2,12 +2,23 @@ package hu.elte.iszraai.webshop.common;
 
 import java.io.Serializable;
 
+import hu.elte.iszraai.webshop.common.annotations.Column;
+import hu.elte.iszraai.webshop.common.annotations.Entity;
+import hu.elte.iszraai.webshop.common.annotations.Id;
+
+@Entity
 public class Item implements Serializable, Comparable<Item> {
 
     private static final long serialVersionUID = 1L;
 
+    @Id
+    @Column(nullable = false)
     private int               id;
+
+    @Column(nullable = false, length = 100)
     private String            name;
+
+    @Column(nullable = false)
     private int               price;
 
     public Item() {
